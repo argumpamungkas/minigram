@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "minigram-api/repo"
 
+func main() {
+	repo.StartServer()
 }
