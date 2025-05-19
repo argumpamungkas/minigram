@@ -1,2 +1,2 @@
-# minigram
+# MiniGram
 Project Minigram, Golang x Flutter
