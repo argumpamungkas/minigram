@@ -1,7 +1,12 @@
 package main
 
-import "minigram-api/repo"
+import (
+	"minigram-api/repo"
+	"minigram-api/routers"
+)
 
 func main() {
-	repo.StartServer()
+	repo.StartDB()
+
+	routers.StartServer().Run(":8080")
 }

@@ -19,7 +19,7 @@ const (
 	host     = "127.0.0.2:3306"
 )
 
-func StartServer() {
+func StartDB() {
 	sqlInfo := fmt.Sprintf("%s:@tcp(%s)/%s", username, host, dbName)
 
 	db, err = sql.Open("mysql", sqlInfo)
