@@ -43,15 +43,20 @@ func RegisterUser(ctx *gin.Context) {
 
 	currentTime := time.Now()
 	pwd := helpers.HashPassword(user.Password)
+	token, err := helpers.GenerateJWT(user.Username, pwd)
 
-	_, err = db.Exec(sqlStatement, user.Username, user.FullName, pwd, user.Token, currentTime)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Exec(sqlStatement, user.Username, user.FullName, pwd, token, currentTime)
 
 	if err != nil {
 		message = fmt.Sprintf("Error %s", err)
 		panic(message)
 	}
 
-	message = fmt.Sprintf("%s Success registered", user.FullName)
+	message = fmt.Sprintf("%s Success registered", user.Username)
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"message": message})
