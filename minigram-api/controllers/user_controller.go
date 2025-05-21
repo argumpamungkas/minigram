@@ -57,7 +57,6 @@ func RegisterUser(ctx *gin.Context) {
 	sqlStatement := `INSERT INTO users (username, full_name, email, password, token, created_date) VALUES (?, ?, ?, ?, ?, ?)`
 
 	_, err = user.BeforeCreate()
-
 	if err != nil {
 		responseInsert.Message = err.Error()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)

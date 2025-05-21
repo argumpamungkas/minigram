@@ -12,7 +12,7 @@ type User struct {
 	Username    string     `json:"username" valid:"required~Username is Required"`
 	FullName    string     `json:"full_name" valid:"required~Name is Required"`
 	Email       string     `json:"email" valid:"required~Email is Required, email~Invalid format Email"`
-	Password    string     `json:"password" valid:"required~Username is Required, minstringlength(6)~Password minimum 6 Character"`
+	Password    string     `json:"password" valid:"required~Password is Required, minstringlength(8)~Password minimum 8 characters"`
 	Avatar      string     `json:"avatar"`
 	Token       string     `json:"token"`
 	CreatedDate *time.Time `json:"created_date"`
@@ -21,6 +21,9 @@ type User struct {
 
 func (u *User) BeforeCreate() (res bool, err error) {
 	res, err = govalidator.ValidateStruct(u)
+	if err != nil {
+		return
+	}
 
 	u.Password = helpers.HashPassword(u.Password)
 	u.Token, err = helpers.GenerateJWT(u.Username, u.Email)
