@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"log"
-	"minigram-api/helpers"
 	"minigram-api/models"
 	"minigram-api/repo"
 	"net/http"
@@ -58,6 +57,7 @@ func RegisterUser(ctx *gin.Context) {
 	sqlStatement := `INSERT INTO users (username, full_name, email, password, token, created_date) VALUES (?, ?, ?, ?, ?, ?)`
 
 	_, err = user.BeforeCreate()
+
 	if err != nil {
 		responseInsert.Message = err.Error()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
@@ -65,18 +65,9 @@ func RegisterUser(ctx *gin.Context) {
 	}
 
 	currentTime := time.Now()
-	pwd := helpers.HashPassword(user.Password)
-	token, err := helpers.GenerateJWT(user.Username, pwd)
-
-	if err != nil {
-		log.Println("GENERATE JWT", err)
-		responseInsert.Message = err.Error()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
-		return
-	}
 
 	// Perintah SQL
-	_, err = db.Exec(sqlStatement, user.Username, user.FullName, user.Email, pwd, token, currentTime)
+	_, err = db.Exec(sqlStatement, user.Username, user.FullName, user.Email, user.Password, user.Token, currentTime)
 
 	if err != nil {
 		log.Println("EXEC", err)
