@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"log"
+	"minigram-api/helpers"
 	"minigram-api/models"
 	"minigram-api/repo"
 	"net/http"
@@ -13,71 +14,158 @@ import (
 
 func RegisterUser(ctx *gin.Context) {
 	var user models.User
-	var responseInsert models.ReponseInsert
+	var responseLogin models.ReponseLogin
+	var responseInfo models.ReponseInfo
 	var exist bool
 	db := repo.GetDb()
 
-	responseInsert.Status = 0
+	responseInfo.Status = 0
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		responseInsert.Message = err.Error()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	// CEK USERNAME
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", user.Username).Scan(&exist)
 	if err != nil {
-		responseInsert.Message = fmt.Sprintf("Error Username %s", err.Error())
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = fmt.Sprintf("Error Username %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	if exist {
-		responseInsert.Message = fmt.Sprintf("Username %s has been registered", user.Username)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = fmt.Sprintf("Username %s has been registered", user.Username)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	// CEK EMAIL
 	err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)", user.Email).Scan(&exist)
 	if err != nil {
-		responseInsert.Message = fmt.Sprintf("Error Email %s", err.Error())
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = fmt.Sprintf("Error Email %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	if exist {
-		responseInsert.Message = fmt.Sprintf("Email %s has been registered", user.Email)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = fmt.Sprintf("Email %s has been registered", user.Email)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	// Insert USER
-	sqlStatement := `INSERT INTO users (username, full_name, email, password, token, created_date) VALUES (?, ?, ?, ?, ?, ?)`
+	sqlStatement := `INSERT INTO users (username, full_name, email, password, created_date) VALUES ( ?, ?, ?, ?, ?)`
 
 	_, err = user.BeforeCreate()
 	if err != nil {
-		responseInsert.Message = err.Error()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	currentTime := time.Now()
 
 	// Perintah SQL
-	_, err = db.Exec(sqlStatement, user.Username, user.FullName, user.Email, user.Password, user.Token, currentTime)
+	_, err = db.Exec(sqlStatement, user.Username, user.FullName, user.Email, user.Password, currentTime)
 
 	if err != nil {
 		log.Println("EXEC", err)
-		responseInsert.Message = err.Error()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInsert)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	// If success
-	responseInsert.Status = 1
-	responseInsert.Message = fmt.Sprintf("%s Success registered", user.Username)
+	token, err := helpers.GenerateJWT(user.Username, user.Email)
+	if err != nil {
+		log.Println("Error generate token", err)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
 
-	ctx.JSON(http.StatusCreated, responseInsert)
+	responseLogin.Status = 1
+	responseLogin.Message = fmt.Sprintf("%s Success registered", user.Username)
+	responseLogin.User.FullName = user.FullName
+	responseLogin.User.Email = user.Email
+	responseLogin.User.Username = user.Username
+	responseLogin.User.Token = token
+
+	ctx.JSON(http.StatusCreated, responseLogin)
+}
+
+func Login(ctx *gin.Context) {
+	var user models.User
+	var responseLogin models.ReponseLogin
+	var responseInfo models.ReponseInfo
+	var exist bool
+	db := repo.GetDb()
+
+	responseInfo.Status = 0
+
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	// CEK USERNAME
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", user.Username).Scan(&exist)
+	if err != nil {
+		responseInfo.Message = fmt.Sprintf("Error Username %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	if !exist {
+		responseInfo.Message = fmt.Sprintf("Username %s Not found", user.Username)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	var pwd string
+	// CEK Password
+	err = db.QueryRow("SELECT password FROM users WHERE username = ?", user.Username).Scan(&pwd)
+	if err != nil {
+		responseInfo.Message = fmt.Sprintf("Error Email %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	comparePass := helpers.ComparePassword([]byte(pwd), []byte(user.Password))
+	if !comparePass {
+		responseInfo.Message = "Invalid password"
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	// Insert USER
+	sqlStatement := `SELECT username, full_name, email, avatar FROM users WHERE username = ?`
+
+	// Perintah SQL
+	err = db.QueryRow(sqlStatement, user.Username).Scan(&responseLogin.User.Username, &responseLogin.User.FullName, &responseLogin.User.Email, &responseLogin.User.Avatar)
+
+	if err != nil {
+		log.Println("GET DATA", err)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	// If success
+	token, err := helpers.GenerateJWT(user.Username, user.Email)
+	if err != nil {
+		log.Println("Error generate token", err)
+		responseInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
+		return
+	}
+
+	responseLogin.Status = 1
+	responseLogin.Message = "User has found"
+	responseLogin.User.Token = token
+
+	ctx.JSON(http.StatusCreated, responseLogin)
 }

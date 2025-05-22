@@ -14,7 +14,6 @@ type User struct {
 	Email       string     `json:"email" valid:"required~Email is Required, email~Invalid format Email"`
 	Password    string     `json:"password" valid:"required~Password is Required, minstringlength(8)~Password minimum 8 characters"`
 	Avatar      string     `json:"avatar"`
-	Token       string     `json:"token"`
 	CreatedDate *time.Time `json:"created_date"`
 	UpdatedDate *time.Time `json:"updated_date"`
 }
@@ -26,7 +25,7 @@ func (u *User) BeforeCreate() (res bool, err error) {
 	}
 
 	u.Password = helpers.HashPassword(u.Password)
-	u.Token, err = helpers.GenerateJWT(u.Username, u.Email)
+	// u.Token, err = helpers.GenerateJWT(u.Username, u.Email)
 
 	return
 }

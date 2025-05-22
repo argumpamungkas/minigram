@@ -20,3 +20,15 @@ func HashPassword(s string) (res string) {
 	res = string(hash)
 	return
 }
+
+func ComparePassword(h, p []byte) bool {
+	hash, pass := []byte(h), []byte(p)
+
+	err := bcrypt.CompareHashAndPassword(hash, pass)
+	if err != nil {
+		log.Println("Invalid password")
+		return false
+	}
+
+	return true
+}
