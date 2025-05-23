@@ -17,7 +17,7 @@ var (
 )
 
 func StartDB() {
-	dsn := fmt.Sprintf("%s:@tcp(%s)/%s?parseTime=true", username, host, dbName)
+	dsn := fmt.Sprintf("%s:@tcp(%s)/%s?parseTime=true&loc=Local", username, host, dbName)
 
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
