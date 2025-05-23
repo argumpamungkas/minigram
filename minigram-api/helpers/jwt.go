@@ -11,7 +11,7 @@ var key = "key123Secret"
 
 func GenerateJWT(username string, email string) (res string, err error) {
 
-	currentTime := time.Now()
+	currentTime := time.Now().Unix()
 
 	claims := jwt.MapClaims{
 		"email":    email,
