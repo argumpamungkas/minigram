@@ -7,6 +7,7 @@ import (
 	"minigram-api/models"
 	"minigram-api/repo"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -67,8 +68,8 @@ func RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	// currentTime := time.Now()
-	// user.CreatedDate = &currentTime
+	currentTime := time.Now()
+	user.CreatedDate = &currentTime
 
 	// Perintah SQL
 	err = db.Debug().Create(&user).Error
