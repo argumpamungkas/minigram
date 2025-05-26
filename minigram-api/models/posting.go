@@ -1,13 +1,28 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/asaskevich/govalidator"
+)
 
 type Posting struct {
-	Id           int        `json:"id"`
-	UserId       int        `json:"user_id"`
-	Caption      string     `json:"caption"`
-	CountLike    int        `json:"count_like"`
-	CountComment int        `json:"count_comement"`
-	CreatedDate  *time.Time `json:"created_date"`
-	UpdatedDate  *time.Time `json:"updated_date"`
+	GormModel
+	UserId  uint   `json:"user_id"`
+	Caption string `json:"caption" form:"caption"`
+	Photo   string `json:"photo" form:"photo" valid:"required~Photo is required"`
+	// CreatedDate  *time.Time `json:"created_date"`
+	// UpdatedDate  *time.Time `json:"updated_date"`
+}
+
+func (p *Posting) BeforeCreate() (res bool, err error) {
+	res, err = govalidator.ValidateStruct(p)
+	if err != nil {
+		return
+	}
+
+	currentTime := time.Now()
+	p.CreatedDate = &currentTime
+
+	return
 }

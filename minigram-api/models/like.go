@@ -2,6 +2,6 @@ package models
 
 type Like struct {
 	GormModel
-	PhotoId uint
-	UserId  uint
+	PhotoId uint `json:"phpto_id"`
+	UserId  uint `json:""`
 }

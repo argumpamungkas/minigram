@@ -7,7 +7,6 @@ import (
 	"minigram-api/models"
 	"minigram-api/repo"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -68,9 +67,6 @@ func RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	currentTime := time.Now()
-	user.CreatedDate = &currentTime
-
 	// Perintah SQL
 	err = db.Debug().Create(&user).Error
 	// _, err = db.Exec(sqlStatement, user.Username, user.FullName, user.Email, user.Password, currentTime)
@@ -83,7 +79,7 @@ func RegisterUser(ctx *gin.Context) {
 	}
 
 	// If success
-	token, err := helpers.GenerateJWT(user.Username, user.Email)
+	token, err := helpers.GenerateJWT(user.Id, user.Username, user.Email)
 	if err != nil {
 		log.Println("Error generate token", err)
 		responseInfo.Message = err.Error()
@@ -103,6 +99,7 @@ func RegisterUser(ctx *gin.Context) {
 
 func Login(ctx *gin.Context) {
 	var user models.User
+	var requsetLogin models.RequestLogin
 	var responseLogin models.ReponseLogin
 	var responseInfo models.ReponseInfo
 	// var exist bool
@@ -111,14 +108,14 @@ func Login(ctx *gin.Context) {
 
 	responseInfo.Status = 0
 
-	if err := ctx.ShouldBindJSON(&user); err != nil {
+	if err := ctx.ShouldBindJSON(&requsetLogin); err != nil {
 		responseInfo.Message = err.Error()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	// CEK USERNAME
-	err := db.Debug().Model(&user).Where("username = ?", user.Username).Count(&count).Error
+	err := db.Debug().Model(&user).Where("username = ?", requsetLogin.Username).Count(&count).Error
 	// err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", user.Username).Scan(&exist)
 	if err != nil {
 		responseInfo.Message = fmt.Sprintf("Error Username %s", err.Error())
@@ -127,23 +124,22 @@ func Login(ctx *gin.Context) {
 	}
 
 	if count == 0 {
-		responseInfo.Message = fmt.Sprintf("Username %s Not found", user.Username)
+		responseInfo.Message = fmt.Sprintf("Username %s Not found", requsetLogin.Username)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
-	var pwd string
 	// CEK Password
-	err = db.Debug().Model(&user).Select("password").Where("username = ?", user.Username).Scan(&pwd).Error
+	err = db.Debug().Model(&user).Select("password").Where("username = ?", requsetLogin.Username).Scan(&user.Password).Error
 
 	// err = db.QueryRow("SELECT password FROM users WHERE username = ?", user.Username).Scan(&pwd)
 	if err != nil {
-		responseInfo.Message = fmt.Sprintf("Error Email %s", err.Error())
+		responseInfo.Message = fmt.Sprintf("Error Password %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
-	comparePass := helpers.ComparePassword([]byte(pwd), []byte(user.Password))
+	comparePass := helpers.ComparePassword([]byte(user.Password), []byte(requsetLogin.Password))
 	if !comparePass {
 		responseInfo.Message = "Invalid password"
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
@@ -154,7 +150,7 @@ func Login(ctx *gin.Context) {
 	// sqlStatement := `SELECT username, full_name, email, avatar FROM users WHERE username = ?`
 
 	// Perintah SQL
-	err = db.Debug().Where("username = ?", user.Username).First(&user).Error
+	err = db.Debug().Where("username = ?", requsetLogin.Username).Take(&user).Error
 	// err = db.QueryRow(sqlStatement, user.Username).Scan(&responseLogin.User.Username, &responseLogin.User.FullName, &responseLogin.User.Email, &responseLogin.User.Avatar)
 
 	if err != nil {
@@ -165,7 +161,7 @@ func Login(ctx *gin.Context) {
 	}
 
 	// If success
-	token, err := helpers.GenerateJWT(user.Username, user.Email)
+	token, err := helpers.GenerateJWT(user.Id, user.Username, user.Email)
 	if err != nil {
 		log.Println("Error generate token", err)
 		responseInfo.Message = err.Error()
@@ -173,8 +169,10 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
+	log.Println(ctx.Request.Host)
+
 	responseLogin.Status = 1
-	responseLogin.Message = "User has found"
+	responseLogin.Message = "User founded"
 	responseLogin.User.Username = user.Username
 	responseLogin.User.Email = user.Email
 	responseLogin.User.FullName = user.FullName
