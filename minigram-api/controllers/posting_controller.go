@@ -105,4 +105,5 @@ func CreatePosting(ctx *gin.Context) {
 	respInfo.Message = "Photo success upload"
 
 	ctx.JSON(http.StatusCreated, respInfo)
+
 }
