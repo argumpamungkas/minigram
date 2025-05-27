@@ -178,5 +178,5 @@ func Login(ctx *gin.Context) {
 	responseLogin.User.FullName = user.FullName
 	responseLogin.User.Token = token
 
-	ctx.JSON(http.StatusCreated, responseLogin)
+	ctx.JSON(http.StatusOK, responseLogin)
 }

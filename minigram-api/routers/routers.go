@@ -22,6 +22,8 @@ func StartServer() *gin.Engine {
 		posting.Use(middlewares.Auth())
 
 		posting.POST("/post", controllers.CreatePosting)
+
+		posting.DELETE("/delete/:photoId", controllers.DeletePosting)
 	}
 
 	return router
