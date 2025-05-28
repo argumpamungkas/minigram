@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 23, 2025 at 10:24 AM
+-- Generation Time: May 28, 2025 at 10:06 AM
 -- Server version: 8.0.30
 -- PHP Version: 7.2.34
 
@@ -74,7 +74,7 @@ CREATE TABLE `likes` (
 CREATE TABLE `postings` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
-  `photo` text NOT NULL,
+  `photo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `caption` varchar(500) NOT NULL,
   `created_date` timestamp NULL DEFAULT NULL,
   `updated_date` timestamp NULL DEFAULT NULL
@@ -161,13 +161,13 @@ ALTER TABLE `likes`
 -- AUTO_INCREMENT for table `postings`
 --
 ALTER TABLE `postings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Constraints for dumped tables
