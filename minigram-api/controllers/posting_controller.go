@@ -110,13 +110,13 @@ func DeletePosting(ctx *gin.Context) {
 
 	respInfo.Status = 0
 
-	photoId := ctx.Param("photoId")
+	postingId := ctx.Param("postingId")
 
 	userData := ctx.MustGet("userData").(jwt.MapClaims)
 	username := userData["username"].(string)
 	userId := uint(userData["id"].(float64))
 
-	err := db.Debug().Where("id = ? AND user_id = ?", photoId, userId).First(&posting).Error
+	err := db.Debug().Where("id = ? AND user_id = ?", postingId, userId).First(&posting).Error
 	if err != nil {
 		log.Println("SELECT POSTING")
 		respInfo.Message = err.Error()
@@ -135,7 +135,7 @@ func DeletePosting(ctx *gin.Context) {
 		return
 	}
 
-	err = db.Debug().Where("id = ?", photoId).Delete(&posting).Error
+	err = db.Debug().Where("id = ?", postingId).Delete(&posting).Error
 	if err != nil {
 		log.Println("SELECT POSTING")
 		respInfo.Message = err.Error()
@@ -147,4 +147,72 @@ func DeletePosting(ctx *gin.Context) {
 	respInfo.Message = "Photo success Deleted"
 
 	ctx.JSON(http.StatusOK, respInfo)
+}
+
+func GetPostingById(ctx *gin.Context) {
+	var respInfo models.ReponseInfo
+	var responsePosting models.ReponsePostingById
+	var posting models.Posting
+
+	db := repo.GetDb()
+
+	respInfo.Status = 0
+
+	postingId := ctx.Param("postingId")
+
+	err := db.Debug().Preload("User").Where("id = ?", postingId).First(&posting).Error
+	if err != nil {
+		log.Println("SELECT POSTING")
+		respInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, respInfo)
+		return
+	}
+
+	responsePosting.Status = 1
+	responsePosting.Message = "Success"
+	responsePosting.Data.UserId = posting.UserId
+	responsePosting.Data.Username = posting.User.Username
+	responsePosting.Data.Avatar = posting.User.Avatar
+	responsePosting.Data.Photo = posting.Photo
+	responsePosting.Data.Caption = posting.Caption
+	responsePosting.Data.Likes = 0
+	responsePosting.Data.Comments = 0
+
+	ctx.JSON(http.StatusOK, responsePosting)
+}
+
+func GetPostingAll(ctx *gin.Context) {
+	var respInfo models.ReponseInfo
+	var responsePosting models.ReponsePostingAll
+	var postings []models.Posting
+
+	db := repo.GetDb()
+
+	respInfo.Status = 0
+
+	err := db.Debug().Preload("User").Order("RAND()").Find(&postings).Error
+	if err != nil {
+		log.Println("SELECT POSTING")
+		respInfo.Message = err.Error()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, respInfo)
+		return
+	}
+
+	responsePosting.Status = 1
+	responsePosting.Message = "Success"
+
+	for _, value := range postings {
+		rp := models.ResponsePosting{}
+		rp.UserId = value.UserId
+		rp.Username = value.User.Username
+		rp.Avatar = value.User.Avatar
+		rp.Photo = value.Photo
+		rp.Caption = value.Caption
+		rp.Likes = 0
+		rp.Comments = 0
+
+		responsePosting.Data = append(responsePosting.Data, rp)
+	}
+
+	ctx.JSON(http.StatusOK, responsePosting)
 }
