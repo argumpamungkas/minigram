@@ -8,9 +8,10 @@ import (
 
 type Posting struct {
 	GormModel
-	UserId  uint   `json:"user_id"`
-	Caption string `json:"caption" form:"caption"`
-	Photo   string `json:"photo" form:"photo" valid:"required~Photo is required"`
+	UserId  uint    `json:"user_id"`
+	Caption *string `json:"caption" form:"caption"`
+	Photo   string  `json:"photo" form:"photo" valid:"required~Photo is required"`
+	User    *User   `gorm:"foreignKey:UserId" json:"user"`
 	// CreatedDate  *time.Time `json:"created_date"`
 	// UpdatedDate  *time.Time `json:"updated_date"`
 }
