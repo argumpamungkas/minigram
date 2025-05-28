@@ -89,10 +89,10 @@ func RegisterUser(ctx *gin.Context) {
 
 	responseLogin.Status = 1
 	responseLogin.Message = fmt.Sprintf("%s Success registered", user.Username)
-	responseLogin.User.FullName = user.FullName
-	responseLogin.User.Email = user.Email
-	responseLogin.User.Username = user.Username
-	responseLogin.User.Token = token
+	responseLogin.Data.FullName = user.FullName
+	responseLogin.Data.Email = user.Email
+	responseLogin.Data.Username = user.Username
+	responseLogin.Data.Token = token
 
 	ctx.JSON(http.StatusCreated, responseLogin)
 }
@@ -173,10 +173,10 @@ func Login(ctx *gin.Context) {
 
 	responseLogin.Status = 1
 	responseLogin.Message = "User founded"
-	responseLogin.User.Username = user.Username
-	responseLogin.User.Email = user.Email
-	responseLogin.User.FullName = user.FullName
-	responseLogin.User.Token = token
+	responseLogin.Data.Username = user.Username
+	responseLogin.Data.Email = user.Email
+	responseLogin.Data.FullName = user.FullName
+	responseLogin.Data.Token = token
 
 	ctx.JSON(http.StatusOK, responseLogin)
 }

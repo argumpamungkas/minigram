@@ -23,7 +23,11 @@ func StartServer() *gin.Engine {
 
 		posting.POST("/post", controllers.CreatePosting)
 
-		posting.DELETE("/delete/:photoId", controllers.DeletePosting)
+		posting.GET("/get", controllers.GetPostingAll)
+
+		posting.GET("/get/:postingId", controllers.GetPostingById)
+
+		posting.DELETE("/delete/:postingId", controllers.DeletePosting)
 	}
 
 	return router
