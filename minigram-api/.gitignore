@@ -1,0 +1,20 @@
+# binaries
+*.exe
+*.out
+*.test
+
+# environment files
+.env
+
+# IDE/editconfige
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS - Specific
+.DS_Store
+Thumbs.db
+
+# ignore entore folder
+assets/

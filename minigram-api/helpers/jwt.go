@@ -3,14 +3,16 @@ package helpers
 import (
 	"errors"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
-var key = "key123Secret"
+// var key = "key123Secret"
 
 func GenerateJWT(id uint, username string, email string) (res string, err error) {
 
@@ -23,6 +25,7 @@ func GenerateJWT(id uint, username string, email string) (res string, err error)
 		"time":     currentTime,
 	}
 
+	key := getSecretKey()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(key))
 	if err != nil {
@@ -49,6 +52,7 @@ func VerifyToken(ctx *gin.Context) (res interface{}, err error) {
 			return
 		}
 
+		key := getSecretKey()
 		res, err = []byte(key), nil
 		return
 	}
@@ -64,5 +68,16 @@ func VerifyToken(ctx *gin.Context) (res interface{}, err error) {
 	}
 
 	res = token.Claims.(jwt.MapClaims)
+	return
+}
+
+func getSecretKey() (res string) {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+		return
+	}
+
+	res = os.Getenv("JWT_SECRET")
 	return
 }
