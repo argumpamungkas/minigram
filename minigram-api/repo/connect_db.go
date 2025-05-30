@@ -3,23 +3,39 @@ package repo
 import (
 	"fmt"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+// MYSQL
+// var (
+// 	username = "root"
+// 	//password = ""
+// 	dbName = "minigram-db"
+// 	host   = "127.0.0.2:3306"
+// 	db     *gorm.DB
+// 	err    error
+// )
+
+// POSTGRES
 var (
-	username = "root"
-	//password = ""
+	host   = "localhost"
+	port   = 5432
+	user   = "postgres"
+	pwd    = "argum12"
 	dbName = "minigram-db"
-	host   = "127.0.0.2:3306"
 	db     *gorm.DB
 	err    error
 )
 
 func StartDB() {
-	dsn := fmt.Sprintf("%s:@tcp(%s)/%s?parseTime=true&loc=Local", username, host, dbName)
+	// MYSQL
+	// dsn := fmt.Sprintf("%s:@tcp(%s)/%s?parseTime=true&loc=Local", username, host, dbName)
 
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// POSTGRES
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable", host, user, pwd, dbName, port)
+
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	// not use gorm
 	// db, err = sql.Open("mysql", sqlInfo)

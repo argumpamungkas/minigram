@@ -56,7 +56,7 @@ func CreatePosting(ctx *gin.Context) {
 			// jika belum ada foldernya maka dibuat
 			err := os.MkdirAll(folder, os.ModePerm)
 			if err != nil {
-				respInfo.Message = "Failed create new folder"
+				respInfo.Message = "failed create new folder"
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, respInfo)
 				return
 			}
@@ -70,7 +70,7 @@ func CreatePosting(ctx *gin.Context) {
 		// photoName := username + "/" + fileName
 		posting.Photo = fileName
 	} else {
-		respInfo.Message = "File is not Image"
+		respInfo.Message = "file is not Image"
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, respInfo)
 		return
 	}
@@ -96,7 +96,7 @@ func CreatePosting(ctx *gin.Context) {
 	}
 
 	respInfo.Status = 1
-	respInfo.Message = "Photo success upload"
+	respInfo.Message = "photo success upload"
 
 	ctx.JSON(http.StatusCreated, respInfo)
 
@@ -190,7 +190,7 @@ func GetPostingAll(ctx *gin.Context) {
 
 	respInfo.Status = 0
 
-	err := db.Debug().Preload("User").Order("RAND()").Find(&postings).Error
+	err := db.Debug().Preload("User").Order("RANDOM()").Find(&postings).Error
 	if err != nil {
 		log.Println("SELECT POSTING")
 		respInfo.Message = err.Error()
@@ -199,7 +199,8 @@ func GetPostingAll(ctx *gin.Context) {
 	}
 
 	responsePosting.Status = 1
-	responsePosting.Message = "Success"
+	responsePosting.Message = "success"
+	responsePosting.Data = []models.ResponsePosting{} // untuk mengindari null jika tidak ada datanya -> []
 
 	for _, value := range postings {
 		rp := models.ResponsePosting{}

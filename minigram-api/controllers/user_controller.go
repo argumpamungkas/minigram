@@ -31,13 +31,13 @@ func RegisterUser(ctx *gin.Context) {
 	err := db.Debug().Model(&user).Where("username = ?", user.Username).Count(&count).Error
 	// err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", user.Username).Scan(&exist)
 	if err != nil {
-		responseInfo.Message = fmt.Sprintf("Error Username %s", err.Error())
+		responseInfo.Message = fmt.Sprintf("error Username %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	if count > 0 {
-		responseInfo.Message = fmt.Sprintf("Username %s has been registered", user.Username)
+		responseInfo.Message = fmt.Sprintf("username %s has been registered", user.Username)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
@@ -46,13 +46,13 @@ func RegisterUser(ctx *gin.Context) {
 	err = db.Debug().Model(&user).Where("email = ?", user.Email).Count(&count).Error
 	// err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)", user.Email).Scan(&exist)
 	if err != nil {
-		responseInfo.Message = fmt.Sprintf("Error Email %s", err.Error())
+		responseInfo.Message = fmt.Sprintf("error Email %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
 
 	if count > 0 {
-		responseInfo.Message = fmt.Sprintf("Email %s has been registered", user.Email)
+		responseInfo.Message = fmt.Sprintf("email %s has been registered", user.Email)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
@@ -88,7 +88,7 @@ func RegisterUser(ctx *gin.Context) {
 	}
 
 	responseLogin.Status = 1
-	responseLogin.Message = fmt.Sprintf("%s Success registered", user.Username)
+	responseLogin.Message = fmt.Sprintf("%s success registered", user.Username)
 	responseLogin.Data.FullName = user.FullName
 	responseLogin.Data.Email = user.Email
 	responseLogin.Data.Username = user.Username
@@ -141,7 +141,7 @@ func Login(ctx *gin.Context) {
 
 	comparePass := helpers.ComparePassword([]byte(user.Password), []byte(requsetLogin.Password))
 	if !comparePass {
-		responseInfo.Message = "Invalid password"
+		responseInfo.Message = "invalid password"
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, responseInfo)
 		return
 	}
@@ -172,7 +172,7 @@ func Login(ctx *gin.Context) {
 	log.Println(ctx.Request.Host)
 
 	responseLogin.Status = 1
-	responseLogin.Message = "User founded"
+	responseLogin.Message = "success"
 	responseLogin.Data.Username = user.Username
 	responseLogin.Data.Email = user.Email
 	responseLogin.Data.FullName = user.FullName
